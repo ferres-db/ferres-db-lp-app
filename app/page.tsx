@@ -23,15 +23,15 @@ export default function Page() {
             <a href="#performance" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Performance
             </a>
-            <a href="#docs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <a href="#install" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Docs
             </a>
             <a href="#install" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Install
             </a>
           </div>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Get Started
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <a href="#install">Get Started</a>
           </Button>
         </div>
       </nav>
@@ -52,12 +52,14 @@ export default function Page() {
             Built in Rust for uncompromising performance and reliability.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Get Started with Docker
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <a href="#install">
+                Get Started with Docker
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
             </Button>
-            <Button size="lg" variant="outline" className="bg-transparent">
-              View Documentation
+            <Button asChild size="lg" variant="outline" className="bg-transparent">
+              <a href="#install">View Documentation</a>
             </Button>
           </div>
 
@@ -562,12 +564,16 @@ export default function Page() {
               Join developers building the next generation of semantic search and RAG applications with FerresDB.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Get Started with Docker
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <a href="#install">
+                  Get Started with Docker
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
               </Button>
-              <Button size="lg" variant="outline" className="bg-transparent">
-                View on GitHub
+              <Button asChild size="lg" variant="outline" className="bg-transparent">
+                <a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer">
+                  View on GitHub
+                </a>
               </Button>
             </div>
           </div>
