@@ -39,6 +39,7 @@ const sidebarSections = [
     icon: Code2,
     children: [
       { id: "api-collections", label: "Collections" },
+      { id: "api-reindex", label: "Reindex" },
       { id: "api-points", label: "Points" },
       { id: "api-search", label: "Search" },
       { id: "api-stats", label: "Stats & Metrics" },
@@ -46,7 +47,9 @@ const sidebarSections = [
       { id: "api-users", label: "Users" },
       { id: "api-audit", label: "Audit" },
       { id: "api-persistence", label: "Persistence" },
+      { id: "api-tiered-storage", label: "Tiered Storage" },
       { id: "api-websocket", label: "WebSocket" },
+      { id: "api-grpc", label: "gRPC" },
     ],
   },
   { id: "sdk-python", label: "Python SDK", icon: Code2 },
@@ -283,6 +286,8 @@ export default function DocsPage() {
                 <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary shrink-0" /> Prometheus metrics + query profiling</div>
                 <div className="flex items-center gap-2"><Users className="h-4 w-4 text-primary shrink-0" /> Dashboard with user management</div>
                 <div className="flex items-center gap-2"><Code2 className="h-4 w-4 text-primary shrink-0" /> TypeScript, Python &amp; Rust SDKs</div>
+                <div className="flex items-center gap-2"><Server className="h-4 w-4 text-primary shrink-0" /> Optional gRPC API (streaming, port 50051)</div>
+                <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary shrink-0" /> Background reindex &amp; tiered storage (Hot/Warm/Cold)</div>
               </div>
             </Card>
 
@@ -418,6 +423,7 @@ volumes:
                     <tr><td className="p-3"><code className="text-primary text-xs">FERRESDB_JWT_SECRET</code></td><td className="p-3 text-muted-foreground text-xs">(dev default)</td><td className="p-3 text-muted-foreground text-xs">JWT secret for dashboard sessions (change in production!)</td></tr>
                     <tr><td className="p-3"><code className="text-primary text-xs">CORS_ORIGINS</code></td><td className="p-3 text-muted-foreground text-xs">localhost:*</td><td className="p-3 text-muted-foreground text-xs">Comma-separated allowed CORS origins</td></tr>
                     <tr><td className="p-3"><code className="text-primary text-xs">OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td className="p-3 text-muted-foreground text-xs">localhost:4317</td><td className="p-3 text-muted-foreground text-xs">OpenTelemetry OTLP endpoint (when otel feature enabled)</td></tr>
+                    <tr><td className="p-3"><code className="text-primary text-xs">GRPC_PORT</code></td><td className="p-3 text-muted-foreground text-xs">50051</td><td className="p-3 text-muted-foreground text-xs">gRPC server port (when grpc feature enabled)</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -588,6 +594,27 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               </TabsContent>
             </Tabs>
 
+            {/* ─── Reindex ────────────────────────────────────── */}
+            <SubHeading id="api-reindex">Reindex (Background)</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              Rebuild the ANN index in the background without downtime. Useful when tombstone count grows (e.g. after many
+              deletions). Searches continue against the old index until the new one is built and swapped. Only one reindex
+              job per collection at a time. Auto-reindex is triggered when tombstones exceed 20% of indexed points.
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <Endpoint method="POST" path="/api/v1/collections/{name}/reindex" description="Start reindex job (returns 202 Accepted)" />
+              <Endpoint method="GET" path="/api/v1/collections/{name}/reindex/{job_id}" description="Get reindex job status" />
+              <Endpoint method="GET" path="/api/v1/collections/{name}/reindex" description="List reindex jobs for collection" />
+            </Card>
+
+            <CodeBlock filename="POST /api/v1/collections/{name}/reindex - Response 202">{`{
+  "job_id": "uuid",
+  "status": "building",
+  "message": "Reindex started"
+}`}</CodeBlock>
+
             {/* ─── Points ────────────────────────────────────── */}
             <SubHeading id="api-points">Points</SubHeading>
 
@@ -672,13 +699,15 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
   "query_text": "how to deploy",
   "query_vector": [0.1, 0.2, -0.1, ...],
   "limit": 5,
-  "alpha": 0.5
+  "fusion": "weighted",
+  "alpha": 0.5,
+  "rrf_k": 60
 }
 
-// alpha: weight between vector (1.0) and BM25 (0.0)
-// Default alpha: 0.5 (equal weight)
-// Requires collection with enable_bm25: true
-// Uses Reciprocal Rank Fusion (RRF) to combine results`}</CodeBlock>
+// fusion: "weighted" (default) or "rrf"
+// weighted: alpha = weight vector (1.0) vs BM25 (0.0). Default alpha: 0.5
+// rrf: Reciprocal Rank Fusion; rrf_k constant (default: 60). No alpha.
+// Requires collection with enable_bm25: true`}</CodeBlock>
               </TabsContent>
               <TabsContent value="response">
                 <CodeBlock filename="Response 200">{`{
@@ -792,6 +821,19 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               Use the save endpoint to force an immediate flush.
             </p>
 
+            {/* ─── Tiered Storage ────────────────────────────── */}
+            <SubHeading id="api-tiered-storage">Tiered Storage</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              Opt-in feature to move vectors between Hot (RAM), Warm (mmap), and Cold (disk) tiers based on access
+              frequency. The HNSW graph stays in memory; only point data is tiered. Use this endpoint to inspect
+              distribution and estimated memory per tier.
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <Endpoint method="GET" path="/api/v1/collections/{name}/tiers" description="Get tier distribution and estimated memory" />
+            </Card>
+
             {/* ─── WebSocket ─────────────────────────────────── */}
             <SubHeading id="api-websocket">WebSocket</SubHeading>
 
@@ -804,6 +846,28 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               <code className="text-primary">Authorization</code> header. Limits: 100 max connections, 10 MB max
               message size, 30s heartbeat, 5 min inactivity timeout.
             </p>
+
+            {/* ─── gRPC ─────────────────────────────────────── */}
+            <SubHeading id="api-grpc">gRPC API</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              FerresDB can expose a native <strong className="text-foreground">gRPC</strong> API (feature flag <code className="text-primary">grpc</code>) as a
+              high-performance alternative to REST, with bidirectional streaming. The gRPC server listens on port{" "}
+              <code className="text-primary">50051</code> (configurable via <code className="text-primary">GRPC_PORT</code>). When enabled, it runs in
+              parallel with the REST API. The same RPCs mirror the REST API: collections CRUD, points upsert/delete/list,
+              Search, HybridSearch, ExplainSearch, plus <code className="text-primary">StreamUpsert</code> and{" "}
+              <code className="text-primary">StreamSearch</code>. Metadata and filters are sent as JSON strings. See the
+              core repo <code className="text-primary">docs/api.md</code> and <code className="text-primary">crates/server/proto/ferresdb.proto</code> for
+              full mapping and client generation (Python, TypeScript, Go).
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <div className="text-sm text-muted-foreground">
+                <span className="text-foreground font-semibold">Default port:</span> <code className="text-primary">50051</code> — set{" "}
+                <code className="text-primary">GRPC_PORT</code> to override. Requires <code className="text-primary">protoc</code> at build time when the
+                gRPC feature is enabled.
+              </div>
+            </Card>
 
             {/* ============================================================ */}
             {/*  6. PYTHON SDK                                               */}
@@ -974,12 +1038,14 @@ for (const result of results) {
 }`}</CodeBlock>
               </TabsContent>
               <TabsContent value="hybrid">
-                <CodeBlock filename="hybrid_search.ts">{`// Hybrid search (vector + BM25 text)
+                <CodeBlock filename="hybrid_search.ts">{`// Hybrid search (vector + BM25). Fusion: "weighted" (alpha) or "rrf" (rrf_k)
 const results = await client.hybridSearch("documents", {
   query_text: "how to deploy",
   query_vector: [0.1, 0.2, -0.1, ...],
   limit: 5,
-  alpha: 0.5,  // 0.0 = pure BM25, 1.0 = pure vector
+  fusion: "weighted",
+  alpha: 0.5,   // for weighted: 0 = BM25, 1 = vector
+  rrf_k: 60,   // for fusion "rrf"
 });`}</CodeBlock>
               </TabsContent>
             </Tabs>
