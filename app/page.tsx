@@ -23,7 +23,7 @@ export default function Page() {
             <a href="#performance" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Performance
             </a>
-            <a href="#install" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <a href="/docs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Docs
             </a>
             <a href="#install" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -59,7 +59,7 @@ export default function Page() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent">
-              <a href="#install">View Documentation</a>
+              <a href="/docs">View Documentation</a>
             </Button>
           </div>
 
@@ -456,7 +456,7 @@ export default function Page() {
                 <h5 className="font-semibold text-sm mb-2">Environment Variables</h5>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Customize with environment variables using <code className="text-primary">-e</code> flag: ports,
-                  storage paths, API keys, and more. See documentation for full list.
+                  storage paths, API keys, and more. See <a href="/docs#configuration" className="text-primary hover:underline">documentation</a> for full list.
                 </p>
               </div>
             </Card>
@@ -598,24 +598,24 @@ export default function Page() {
             <div>
               <h4 className="mb-4 font-semibold">Documentation</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Getting Started</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">API Reference</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Architecture</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Examples</a></li>
+                <li><a href="/docs#getting-started" className="text-muted-foreground hover:text-primary">Getting Started</a></li>
+                <li><a href="/docs#api-reference" className="text-muted-foreground hover:text-primary">API Reference</a></li>
+                <li><a href="/docs#data-model" className="text-muted-foreground hover:text-primary">Architecture</a></li>
+                <li><a href="/docs#docker" className="text-muted-foreground hover:text-primary">Installation</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-semibold">SDKs</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary">TypeScript SDK</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Python SDK</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">REST API</a></li>
+                <li><a href="/docs#sdk-typescript" className="text-muted-foreground hover:text-primary">TypeScript SDK</a></li>
+                <li><a href="/docs#sdk-python" className="text-muted-foreground hover:text-primary">Python SDK</a></li>
+                <li><a href="/docs#api-reference" className="text-muted-foreground hover:text-primary">REST API</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-semibold">Community</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary">GitHub</a></li>
+                <li><a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">GitHub</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary">Discord</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary">Twitter</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary">Blog</a></li>
