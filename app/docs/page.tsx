@@ -877,7 +877,8 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
 
             <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
               The Python SDK provides an async client built on <code className="text-primary">httpx</code> with
-              automatic retry, structured logging, and type hints. Requires Python 3.8+.
+              automatic retry, structured logging, and type hints. Includes <code className="text-primary">RealtimeClient</code> for
+              WebSocket streaming (upsert, subscribe to collection events). Requires Python 3.8+. Optional dependency: <code className="text-primary">websockets&gt;=12.0</code> for RealtimeClient.
             </p>
 
             <Tabs defaultValue="setup" className="mb-6">
@@ -886,59 +887,99 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
                 <TabsTrigger value="collection">Collections</TabsTrigger>
                 <TabsTrigger value="upsert">Upsert</TabsTrigger>
                 <TabsTrigger value="search">Search</TabsTrigger>
+                <TabsTrigger value="hybrid">Hybrid</TabsTrigger>
+                <TabsTrigger value="realtime">Realtime</TabsTrigger>
               </TabsList>
               <TabsContent value="setup">
-                <CodeBlock filename="setup.py">{`from vector_db_client import VectorDBClient, Point, DistanceMetric
+                <CodeBlock filename="setup.py">{`import asyncio
+from vector_db_client import VectorDBClient, Point, DistanceMetric
 
-client = VectorDBClient(
-    base_url="http://localhost:8080",
-    api_key="ferres_sk_...",
-)`}</CodeBlock>
+async def main():
+    async with VectorDBClient(
+        base_url="http://localhost:8080",
+        api_key="ferres_sk_...",
+        timeout=30,
+    ) as client:
+        # create_collection, upsert_points, search, etc.
+        pass
+
+asyncio.run(main())`}</CodeBlock>
               </TabsContent>
               <TabsContent value="collection">
-                <CodeBlock filename="create_collection.py">{`# Create a collection
+                <CodeBlock filename="create_collection.py">{`# Create a collection (optional: enable_bm25, bm25_text_field,
+# quantization=QuantizationConfig.scalar_int8(), tiered_storage=...)
 collection = await client.create_collection(
     name="my-collection",
     dimension=384,
     distance=DistanceMetric.COSINE,
+    enable_bm25=True,
 )
 
-# List collections
+# List / get / delete
 collections = await client.list_collections()
-
-# Delete collection
+detail = await client.get_collection("my-collection")
 await client.delete_collection("my-collection")`}</CodeBlock>
               </TabsContent>
               <TabsContent value="upsert">
                 <CodeBlock filename="upsert_points.py">{`from vector_db_client import Point
 
 points = [
-    Point(
-        id="doc-1",
-        vector=[0.1, 0.2, 0.3, ...],
-        metadata={"text": "Hello world", "category": "greeting"}
-    ),
-    Point(
-        id="doc-2",
-        vector=[0.4, 0.5, 0.6, ...],
-        metadata={"text": "Goodbye world", "category": "farewell"}
-    ),
+    Point(id="doc-1", vector=[0.1, 0.2, 0.3, ...], metadata={"text": "Hello world", "category": "greeting"}),
+    Point(id="doc-2", vector=[0.4, 0.5, 0.6, ...], metadata={"text": "Goodbye world", "category": "farewell"}),
 ]
 
-# Upsert points (auto-batches if > 1000)
-result = await client.upsert_points("my-collection", points)`}</CodeBlock>
+# Upsert (auto-batches if > 1000). Returns UpsertResult(upserted, failed)
+result = await client.upsert_points("my-collection", points)
+
+# Get / list points
+point = await client.get_point("my-collection", "doc-1")
+page = await client.list_points("my-collection", limit=100, offset=0)`}</CodeBlock>
               </TabsContent>
               <TabsContent value="search">
-                <CodeBlock filename="search.py">{`# Vector search
-results = await client.search(
+                <CodeBlock filename="search.py">{`# Vector search — returns SearchResponse(results, took_ms, query_id)
+response = await client.search(
     collection="my-collection",
     vector=[0.1, 0.2, 0.3, ...],
     limit=10,
+    filter={"category": "greeting"},
+    budget_ms=50,  # optional; raises BudgetExceededError if exceeded
 )
 
-for result in results:
-    print(f"{result.id}: {result.score}")
-    print(f"  {result.metadata}")`}</CodeBlock>
+for result in response.results:
+    print(f"{result.id}: {result.score}  {result.metadata}")
+
+# Cost estimate (no search executed)
+estimate = await client.estimate_search_cost("my-collection", limit=10, include_history=True)
+# Explain (why each result was returned)
+explanation = await client.search_explain("my-collection", vector=[...], limit=5)`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="hybrid">
+                <CodeBlock filename="hybrid_search.py">{`# Hybrid search (vector + BM25). Collection must have enable_bm25=True
+response = await client.hybrid_search(
+    collection="my-collection",
+    query_text="how to deploy",
+    query_vector=[0.1, 0.2, ...],
+    limit=5,
+    fusion="weighted",  # or "rrf"
+    alpha=0.5,         # for weighted: 0=BM25, 1=vector
+    rrf_k=60,           # for fusion "rrf"
+)
+for result in response.results:
+    print(f"{result.id}: {result.score}")`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="realtime">
+                <CodeBlock filename="realtime.py">{`from vector_db_client import RealtimeClient, Point
+
+# WebSocket client (requires: pip install websockets>=12.0)
+async with RealtimeClient("http://localhost:8080", api_key="ferres_sk_...") as rt:
+    # Upsert over WebSocket
+    ack = await rt.upsert("my-collection", [Point("id-1", [0.1, 0.2], {"text": "hi"})])
+    print(f"Upserted {ack.upserted} in {ack.took_ms}ms")
+
+    # Subscribe to collection events (upsert/delete)
+    rt.on_event(lambda evt: print(f"Event: {evt.action} on {evt.collection}"))
+    await rt.subscribe("my-collection", events=["upsert", "delete"])
+    await asyncio.sleep(60)`}</CodeBlock>
               </TabsContent>
             </Tabs>
 
@@ -951,6 +992,11 @@ for result in results:
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Auto-batching (&gt;1000 points)</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Async/await (httpx)</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Python 3.8+ support</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> RealtimeClient: WebSocket upsert + event subscription</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> estimate_search_cost, search_explain</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization (SQ8) &amp; tiered storage (Hot/Warm/Cold)</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> API keys: list_keys, create_key, delete_key</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Reindex: start_reindex, get_reindex_job, list_reindex_jobs</div>
               </div>
             </Card>
 
@@ -959,14 +1005,16 @@ for result in results:
             {/* ============================================================ */}
             <SectionHeading id="sdk-typescript">TypeScript SDK</SectionHeading>
 
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-6 flex-wrap">
               <Badge className="bg-green-500/15 text-green-400 border-green-500/30 hover:bg-green-500/20">npm</Badge>
-              <code className="text-sm text-primary">npm install @ferresdb/typescript-sdk</code>
+              <code className="text-sm text-primary">pnpm add @ferresdb/typescript-sdk</code>
+              <span className="text-muted-foreground text-xs">or npm / yarn</span>
             </div>
 
             <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
               The TypeScript SDK provides a fully-typed client with automatic retry, runtime validation via Zod,
-              and WebSocket support. Works with Node.js, Deno, and browser environments.
+              and <code className="text-primary">RealtimeClient</code> for WebSocket streaming (upsert, subscribe to collection events).
+              Works with Node.js 18+, Deno, and browser environments.
             </p>
 
             <Tabs defaultValue="setup" className="mb-6">
@@ -976,6 +1024,7 @@ for result in results:
                 <TabsTrigger value="upsert">Upsert</TabsTrigger>
                 <TabsTrigger value="search">Search</TabsTrigger>
                 <TabsTrigger value="hybrid">Hybrid</TabsTrigger>
+                <TabsTrigger value="realtime">Realtime</TabsTrigger>
               </TabsList>
               <TabsContent value="setup">
                 <CodeBlock filename="setup.ts">{`import { VectorDBClient, DistanceMetric } from "@ferresdb/typescript-sdk";
@@ -989,7 +1038,7 @@ const client = new VectorDBClient({
 });`}</CodeBlock>
               </TabsContent>
               <TabsContent value="collection">
-                <CodeBlock filename="collections.ts">{`// Create a collection
+                <CodeBlock filename="collections.ts">{`// Create a collection (optional: quantization, tiered_storage)
 const collection = await client.createCollection({
   name: "documents",
   dimension: 384,
@@ -997,52 +1046,68 @@ const collection = await client.createCollection({
   enable_bm25: true,
 });
 
-// List all collections
+// List / get / delete
 const collections = await client.listCollections();
-
-// Delete a collection
+const detail = await client.getCollection("documents");
 await client.deleteCollection("documents");`}</CodeBlock>
               </TabsContent>
               <TabsContent value="upsert">
-                <CodeBlock filename="upsert.ts">{`// Upsert points (auto-batches if > 1000)
+                <CodeBlock filename="upsert.ts">{`// Upsert points (auto-batches if > 1000). Returns UpsertResult
 const result = await client.upsertPoints("documents", [
-  {
-    id: "doc-1",
-    vector: [0.1, 0.2, -0.1, ...],
-    metadata: { text: "Hello world", category: "greeting" },
-  },
-  {
-    id: "doc-2",
-    vector: [0.3, -0.1, 0.5, ...],
-    metadata: { text: "Goodbye world", category: "farewell" },
-  },
-]);`}</CodeBlock>
+  { id: "doc-1", vector: [0.1, 0.2, -0.1, ...], metadata: { text: "Hello world", category: "greeting" } },
+  { id: "doc-2", vector: [0.3, -0.1, 0.5, ...], metadata: { text: "Goodbye world", category: "farewell" } },
+]);
+
+// Get point / list points (paginated)
+const point = await client.getPoint("documents", "doc-1");
+const page = await client.listPoints("documents", { limit: 100, offset: 0 });`}</CodeBlock>
               </TabsContent>
               <TabsContent value="search">
-                <CodeBlock filename="search.ts">{`// Vector search with filters
-const results = await client.search("documents", {
+                <CodeBlock filename="search.ts">{`// Vector search — returns { results, took_ms, query_id? }
+const response = await client.search("documents", {
   vector: [0.1, 0.2, -0.1, ...],
   limit: 5,
-  filter: {
-    category: "greeting",
-  },
+  filter: { category: "greeting" },
+  budget_ms: 50,  // optional; throws BudgetExceededError if exceeded
 });
 
-for (const result of results) {
-  console.log(\`\${result.id}: \${result.score}\`);
-  console.log(result.metadata);
-}`}</CodeBlock>
+for (const result of response.results) {
+  console.log(\`\${result.id}: \${result.score}\`, result.metadata);
+}
+
+// Cost estimate (no search executed)
+const estimate = await client.estimateSearchCost("documents", { limit: 10, include_history: true });
+// Explain (why each result was returned)
+const explanation = await client.searchExplain("documents", { vector: [...], limit: 5 });`}</CodeBlock>
               </TabsContent>
               <TabsContent value="hybrid">
-                <CodeBlock filename="hybrid_search.ts">{`// Hybrid search (vector + BM25). Fusion: "weighted" (alpha) or "rrf" (rrf_k)
-const results = await client.hybridSearch("documents", {
+                <CodeBlock filename="hybrid_search.ts">{`// Hybrid search (vector + BM25). Collection must have enable_bm25: true
+const response = await client.hybridSearch("documents", {
   query_text: "how to deploy",
   query_vector: [0.1, 0.2, -0.1, ...],
   limit: 5,
   fusion: "weighted",
-  alpha: 0.5,   // for weighted: 0 = BM25, 1 = vector
-  rrf_k: 60,   // for fusion "rrf"
-});`}</CodeBlock>
+  alpha: 0.5,
+  rrf_k: 60,
+});
+for (const result of response.results) {
+  console.log(\`\${result.id}: \${result.score}\`);
+}`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="realtime">
+                <CodeBlock filename="realtime.ts">{`import { RealtimeClient } from "@ferresdb/typescript-sdk";
+
+const rt = new RealtimeClient({ baseUrl: "http://localhost:8080", apiKey: "ferres_sk_..." });
+await rt.connect();
+
+// Upsert over WebSocket
+const ack = await rt.upsert("documents", [{ id: "1", vector: [0.1, 0.2], metadata: { text: "hi" } }]);
+console.log(\`Upserted \${ack.upserted} in \${ack.took_ms}ms\`);
+
+// Subscribe to collection events
+rt.on("event", (evt) => console.log(\`Event: \${evt.action} on \${evt.collection}\`));
+await rt.subscribe("documents", ["upsert", "delete"]);
+await rt.close();`}</CodeBlock>
               </TabsContent>
             </Tabs>
 
@@ -1053,8 +1118,12 @@ const results = await client.hybridSearch("documents", {
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Runtime validation with Zod</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Automatic retry with backoff</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Auto-batching (&gt;1000 points)</div>
-                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> WebSocket support</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> RealtimeClient: WebSocket upsert + event subscription</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> ESM and CJS exports</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> estimateSearchCost, searchExplain</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization (SQ8) &amp; tiered storage config</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> API keys: listKeys, createKey, deleteKey</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Reindex: startReindex, getReindexJob, listReindexJobs</div>
               </div>
             </Card>
 
