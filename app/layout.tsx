@@ -1,8 +1,11 @@
 import React from "react"
 import type { Metadata } from 'next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import './globals.css'
+
+const GA_MEASUREMENT_ID = 'G-58EP4LQ7LC'
 
 const _geist = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
@@ -22,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {children}
+        <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
+      </body>
     </html>
   )
 }
