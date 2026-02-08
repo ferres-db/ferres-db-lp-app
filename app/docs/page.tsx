@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
-  Database,
   ChevronRight,
   Menu,
   X,
@@ -161,10 +160,7 @@ export default function DocsPage() {
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <a href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                <Database className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">FerresDB</span>
+              <img src="/logo.png" alt="FerresDB" className="h-8 w-auto object-contain" />
             </a>
             <Badge className="bg-primary/10 text-primary hover:bg-primary/20 text-xs">Docs</Badge>
           </div>
