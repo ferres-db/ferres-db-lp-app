@@ -1139,7 +1139,7 @@ export default function Page() {
               </h2>
               <p className="mb-8 text-pretty text-muted-foreground md:text-lg">
                 Join developers building the next generation of AI applications with FerresDB.
-                Open-source, self-hosted, no cloud lock-in.
+                Self-hosted, no cloud lock-in.
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8">
@@ -1171,7 +1171,7 @@ export default function Page() {
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 High-performance vector search engine built in Rust. 
-                Open-source, self-hosted, enterprise-ready.
+                Self-hosted, enterprise-ready.
               </p>
             </div>
             <div>
@@ -1205,10 +1205,10 @@ export default function Page() {
           </div>
           <Separator className="my-8" />
           <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
-            <p>&copy; 2025 FerresDB. Built with Rust.</p>
+            <p>&copy; 2026 FerresDB. Built with Rust.</p>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-              <a href="#" className="hover:text-primary transition-colors">Terms</a>
+              <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
+              <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
               <a href="#" className="hover:text-primary transition-colors">License</a>
             </div>
           </div>
