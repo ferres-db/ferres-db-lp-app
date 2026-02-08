@@ -198,12 +198,9 @@ export default function Page() {
         className="fixed top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md"
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-              <Database className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">FerresDB</span>
-          </div>
+          <a href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="FerresDB" className="h-8 w-auto object-contain" />
+          </a>
           <div className="hidden items-center gap-6 md:flex">
             <a href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Features
@@ -1170,10 +1167,7 @@ export default function Page() {
           <div className="grid gap-8 md:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                  <Database className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold">FerresDB</span>
+                <img src="/logo.png" alt="FerresDB" className="h-8 w-auto object-contain" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 High-performance vector search engine built in Rust. 
