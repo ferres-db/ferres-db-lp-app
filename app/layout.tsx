@@ -10,6 +10,9 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'FerresDB - High-Performance Vector Database in Rust',
   description: 'FerresDB is a high-performance vector search engine written in Rust for semantic search, RAG, and recommendation systems. Sub-millisecond latency, tens of thousands of vectors per second.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
