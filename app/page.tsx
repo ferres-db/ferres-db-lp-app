@@ -217,6 +217,9 @@ export default function Page() {
             <a href="#install" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Install
             </a>
+            <a href="/contact" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Contact
+            </a>
           </div>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <a href="#install">Get Started</a>
@@ -1197,7 +1200,7 @@ export default function Page() {
               <h4 className="mb-4 font-semibold">Community</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">GitHub</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Discord</a></li>
+                <li><a href="https://discord.gg/uudYmwjv7U" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">Discord</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Twitter</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Blog</a></li>
               </ul>
@@ -1207,6 +1210,7 @@ export default function Page() {
           <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
             <p>&copy; 2026 FerresDB. Built with Rust.</p>
             <div className="flex gap-4">
+              <a href="/contact" className="hover:text-primary transition-colors">Contact</a>
               <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
               <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
               <a href="#" className="hover:text-primary transition-colors">License</a>

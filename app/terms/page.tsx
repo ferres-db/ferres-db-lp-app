@@ -87,6 +87,7 @@ export default function TermsPage() {
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>&copy; 2026 FerresDB. Built with Rust.</p>
           <div className="flex gap-4">
+            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
           </div>
