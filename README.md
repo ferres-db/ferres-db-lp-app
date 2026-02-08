@@ -23,6 +23,11 @@ pnpm install
 pnpm dev
 ```
 
+```bash
+  npm install
+  npm run dev
+```
+
 Open [http://localhost:3000](http://localhost:3000). Docs: [http://localhost:3000/docs](http://localhost:3000/docs).
 
 ## Changelog
