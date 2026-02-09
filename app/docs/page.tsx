@@ -49,6 +49,7 @@ const sidebarSections = [
       { id: "api-tiered-storage", label: "Tiered Storage" },
       { id: "api-websocket", label: "WebSocket" },
       { id: "api-grpc", label: "gRPC" },
+      { id: "api-mcp", label: "MCP" },
     ],
   },
   { id: "sdk-python", label: "Python SDK", icon: Code2 },
@@ -548,6 +549,7 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               <span className="text-foreground font-semibold">Public endpoints</span> (no auth required):{" "}
               <code className="text-primary">GET /health</code>,{" "}
               <code className="text-primary">GET /metrics</code>,{" "}
+              <code className="text-primary">GET /dashboard</code> (built-in web dashboard HTML),{" "}
               <code className="text-primary">POST /api/v1/auth/login</code>
             </div>
 
@@ -572,12 +574,18 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
   "dimension": 384,
   "distance": "Cosine",
   "enable_bm25": false,
-  "bm25_text_field": "text"
+  "bm25_text_field": "text",
+  "tiered_storage": {
+    "enabled": true,
+    "hot_threshold_hours": 24,
+    "warm_threshold_hours": 168,
+    "compaction_interval_secs": 3600
+  }
 }
 
-// distance options: "Cosine", "Euclidean", "DotProduct"
-// enable_bm25: optional (default: false)
-// bm25_text_field: optional (default: "text")`}</CodeBlock>
+// distance: "Cosine" | "Euclidean" | "DotProduct"
+// enable_bm25, bm25_text_field: optional
+// tiered_storage: optional — see Tiered Storage section`}</CodeBlock>
               </TabsContent>
               <TabsContent value="response">
                 <CodeBlock filename="Response 200">{`{
@@ -632,32 +640,29 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
     {
       "id": "doc-1",
       "vector": [0.1, 0.2, -0.1, ...],
-      "metadata": {
-        "text": "Hello world",
-        "category": "greeting"
-      }
-    },
-    {
-      "id": "doc-2",
-      "vector": [0.3, -0.1, 0.5, ...],
-      "metadata": {
-        "text": "Goodbye world",
-        "category": "farewell"
-      }
+      "metadata": { "text": "Hello world", "category": "greeting" },
+      "namespace": "tenant-a",
+      "ttl": 3600,
+      "vectors": { "content_vector": [0.0, -0.1, 0.3, ...] }
     }
   ]
 }
 
-// Max 1000 points per batch
-// Vector dimension must match collection
-// Existing IDs are updated (upsert)`}</CodeBlock>
+// Max 1000 points per batch. Optional: namespace (multitenancy), ttl (seconds), vectors (named vectors)`}</CodeBlock>
               </TabsContent>
               <TabsContent value="delete">
                 <CodeBlock filename="DELETE /api/v1/collections/{name}/points">{`{
-  "ids": ["doc-1", "doc-2"]
-}`}</CodeBlock>
+  "ids": ["doc-1", "doc-2"],
+  "namespace": "tenant-a"
+}
+
+// Optional: namespace (when using multitenancy)`}</CodeBlock>
               </TabsContent>
             </Tabs>
+
+            <p className="text-sm text-muted-foreground mb-4">
+              List points: query params <code className="text-primary">limit</code> (default 100, max 1000), <code className="text-primary">offset</code>, <code className="text-primary">filter</code> (JSON string). Response: <code className="text-primary">{"{ points, total, limit, offset, has_more }"}</code>.
+            </p>
 
             {/* ─── Search ────────────────────────────────────── */}
             <SubHeading id="api-search">Search</SubHeading>
@@ -679,16 +684,15 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
                 <CodeBlock filename="POST /api/v1/collections/{name}/search">{`{
   "vector": [0.1, 0.2, -0.1, ...],
   "limit": 5,
-  "filter": {
-    "category": "tech",
-    "price": { "$gte": 10, "$lte": 100 }
-  },
+  "filter": { "category": "tech", "price": { "$gte": 10, "$lte": 100 } },
+  "namespace": "tenant-a",
+  "vector_field": "content_vector",
   "budget_ms": 50
 }
 
-// filter: optional metadata filter
-// budget_ms: optional, fails with 422 if exceeded
-// Filter operators: $eq, $ne, $in, $gt, $lt, $gte, $lte`}</CodeBlock>
+// filter: optional metadata filter (native HNSW pre-filtering)
+// namespace: optional, restrict to tenant. vector_field: optional, for multi-vector points (default or named)
+// budget_ms: optional, 422 if exceeded. Operators: $eq, $ne, $in, $gt, $lt, $gte, $lte`}</CodeBlock>
               </TabsContent>
               <TabsContent value="hybrid">
                 <CodeBlock filename="POST /api/v1/collections/{name}/search/hybrid">{`{
@@ -728,13 +732,18 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
             <Card className="border-border bg-card p-4 mb-6">
               <Endpoint method="GET" path="/health" description="Health check" auth={false} />
               <Endpoint method="GET" path="/metrics" description="Prometheus metrics" auth={false} />
-              <Endpoint method="GET" path="/api/v1/stats/global" description="Global statistics" auth={false} />
+              <Endpoint method="GET" path="/api/v1/stats/global" description="Global statistics (incl. simd_enabled)" auth={false} />
+              <Endpoint method="GET" path="/api/v1/stats/analytics" description="Dashboard analytics (time_series_10m, cache_hit_rate_pct)" auth={false} />
               <Endpoint method="GET" path="/api/v1/stats/queries" description="Recent queries (24h)" auth={false} />
               <Endpoint method="GET" path="/api/v1/stats/slow-queries" description="Slow queries" auth={false} />
               <Endpoint method="GET" path="/api/v1/stats/feedback" description="Query feedback stats" auth={false} />
               <Endpoint method="GET" path="/api/v1/collections/{name}/stats" description="Collection statistics" />
               <Endpoint method="GET" path="/api/v1/debug/query-profile/{query_id}" description="Query execution profile" auth={false} />
             </Card>
+
+            <p className="text-sm text-muted-foreground mb-6">
+              <code className="text-primary">GET /api/v1/stats/analytics</code> returns consolidated data for the dashboard: time-series for the last 10 minutes (ingestion throughput, P95 latency, recent latencies) and <code className="text-primary">cache_hit_rate_pct</code> from the core search cache. Useful for real-time charts. The server uses SIMD kernels (AVX2/SSE4.1) when available for distance computations; <code className="text-primary">GET /api/v1/stats/global</code> returns <code className="text-primary">simd_enabled</code>.
+            </p>
 
             {/* ─── API Keys Management ───────────────────────── */}
             <SubHeading id="api-keys">API Keys Management</SubHeading>
@@ -816,6 +825,9 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               FerresDB automatically saves dirty collections every 30 seconds and on graceful shutdown.
               Use the save endpoint to force an immediate flush.
             </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              <span className="text-foreground font-semibold">Storage options:</span> Optional <code className="text-primary">wal_compression</code> (Zstd for WAL) and <code className="text-primary">binary_snapshot</code> (points.bin instead of points.jsonl) reduce disk usage and load time. Configure via <code className="text-primary">config.toml</code> or env <code className="text-primary">FERRESDB_WAL_COMPRESSION</code>, <code className="text-primary">FERRESDB_BINARY_SNAPSHOT</code>. See core <code className="text-primary">docs/api.md</code> for details.
+            </p>
 
             {/* ─── Tiered Storage ────────────────────────────── */}
             <SubHeading id="api-tiered-storage">Tiered Storage</SubHeading>
@@ -864,6 +876,21 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
                 gRPC feature is enabled.
               </div>
             </Card>
+
+            {/* ─── MCP (Model Context Protocol) ─────────────────────────── */}
+            <SubHeading id="api-mcp">MCP (Model Context Protocol)</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              FerresDB can act as an <strong className="text-foreground">MCP server</strong> via STDIO, allowing clients such as Claude Desktop to connect to the binary and use tools for vector search, upsert, and statistics. The protocol uses stdin for input and stdout for output; server logs are redirected to stderr when MCP mode is active.
+            </p>
+            <p className="text-muted-foreground mb-4 text-sm">
+              <span className="text-foreground font-semibold">Activation:</span> Run with <code className="text-primary">--mcp</code> or set <code className="text-primary">FERRESDB_ENABLE_MCP=true</code> (or <code className="text-primary">1</code>). Build with the <code className="text-primary">mcp</code> feature: <code className="text-primary">cargo build -p ferres-db-server --features mcp</code>. The REST (and gRPC) server continues to run in the same process.
+            </p>
+            <p className="text-muted-foreground mb-4 text-sm">
+              <span className="text-foreground font-semibold">Tools:</span> <code className="text-primary">search_points</code> (vector search with native pre-filtering), <code className="text-primary">upsert_points</code>, <code className="text-primary">get_stats</code> (global or per collection). See the core repo <code className="text-primary">docs/api.md</code> (Model Context Protocol section) for full argument and response schemas.
+            </p>
+            <CodeBlock filename="Claude Desktop (stdio)">{`# In your MCP config, point to the FerresDB binary with --mcp:
+# /path/to/ferres-db-server --mcp`}</CodeBlock>
 
             {/* ============================================================ */}
             {/*  6. PYTHON SDK                                               */}
@@ -1172,12 +1199,11 @@ await rt.close();`}</CodeBlock>
 
             <CodeBlock filename="Point structure">{`{
   "id": "unique-string-id",
-  "vector": [0.1, 0.2, -0.1, ...],  // f32 values, length = collection dimension
-  "metadata": {                       // arbitrary JSON object
-    "text": "content for BM25",
-    "category": "example",
-    "price": 42.5
-  }
+  "vector": [0.1, 0.2, -0.1, ...],   // f32, length = collection dimension
+  "metadata": { "text": "content for BM25", "category": "example", "price": 42.5 },
+  "namespace": "tenant-a",            // optional, multitenancy
+  "ttl": 3600,                        // optional, seconds until expiry
+  "vectors": { "content_vector": [...] }  // optional, named vectors (multi-vector)
 }`}</CodeBlock>
 
             {/* Distance Metrics */}
@@ -1240,8 +1266,8 @@ await rt.close();`}</CodeBlock>
             <CodeBlock filename="Storage layout">{`{STORAGE_PATH}/
 ├── collections/
 │   └── {name}/
-│       ├── points.jsonl       # Current state
-│       ├── wal.jsonl          # Write-ahead log (append-only)
+│       ├── points.jsonl       # Current state (or points.bin if binary_snapshot)
+│       ├── wal.jsonl          # Write-ahead log (or wal.log with wal_compression/Zstd)
 │       ├── snapshot.jsonl     # Periodic snapshots (every 1000 ops)
 │       └── index.bin          # HNSW index (binary)
 ├── api_keys.db                # SQLite: API keys (SHA-256 hashed)

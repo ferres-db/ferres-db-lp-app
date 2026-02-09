@@ -298,7 +298,7 @@ export default function Page() {
             {[
               { value: "<500μs", label: "P50 Search Latency", sub: "Sub-millisecond" },
               { value: "50K+", label: "Vectors/Second", sub: "Indexing throughput" },
-              { value: "3 APIs", label: "REST + gRPC + WS", sub: "Multi-protocol" },
+              { value: "4", label: "REST, gRPC, WS, MCP", sub: "Multi-protocol" },
               { value: "HNSW", label: "ANN Algorithm", sub: "High recall rate" },
             ].map((stat, i) => (
               <motion.div
@@ -427,9 +427,9 @@ export default function Page() {
               },
               {
                 icon: Radio,
-                title: "Multi-Protocol: REST, gRPC, WebSocket",
+                title: "Multi-Protocol: REST, gRPC, WebSocket, MCP",
                 description:
-                  "REST API for simplicity, gRPC with bidirectional streaming for high-throughput, and WebSocket for real-time applications. All protocols run in parallel.",
+                  "REST API for simplicity, gRPC with bidirectional streaming for high-throughput, WebSocket for real-time applications, and MCP (Model Context Protocol) via STDIO for Claude Desktop and other AI assistants. All protocols run in parallel.",
                 color: "bg-blue-500/10 text-blue-400",
               },
               {
@@ -1227,6 +1227,7 @@ export default function Page() {
                 <li><a href="/docs#api-reference" className="text-muted-foreground hover:text-primary transition-colors">REST API</a></li>
                 <li><a href="/docs#api-grpc" className="text-muted-foreground hover:text-primary transition-colors">gRPC API</a></li>
                 <li><a href="/docs#api-websocket" className="text-muted-foreground hover:text-primary transition-colors">WebSocket</a></li>
+                <li><a href="/docs#api-mcp" className="text-muted-foreground hover:text-primary transition-colors">MCP</a></li>
               </ul>
             </div>
             <div>
