@@ -1128,6 +1128,39 @@ export default function Page() {
       </section>
 
       {/* ================================================================ */}
+      {/*  PRODUCT HUNT — SUPPORT US                                        */}
+      {/* ================================================================ */}
+      <section className="border-t border-border py-20 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <AnimatedSection>
+            <div className="mx-auto max-w-2xl text-center">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20">Community</Badge>
+              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                Support us on Product Hunt
+              </h2>
+              <p className="mb-8 text-pretty text-muted-foreground md:text-lg">
+                FerresDB is on Product Hunt. Your upvote and feedback help us reach more developers
+                building AI applications. Click the badge below to visit our page.
+              </p>
+              <a
+                href="https://www.producthunt.com/products/ferresdb?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-ferresdb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block transition-transform hover:scale-105"
+              >
+                <img
+                  alt="FerresDB - High-performance Vector Search Engine built in Rust | Product Hunt"
+                  width={250}
+                  height={54}
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1075967&theme=dark&t=1770641114547"
+                />
+              </a>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
       {/*  CTA SECTION                                                      */}
       {/* ================================================================ */}
       <section className="border-t border-border py-24 relative overflow-hidden">
@@ -1201,9 +1234,25 @@ export default function Page() {
               <ul className="space-y-2 text-sm">
                 <li><a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">GitHub</a></li>
                 <li><a href="https://discord.gg/uudYmwjv7U" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">Discord</a></li>
+                <li><a href="https://www.producthunt.com/products/ferresdb?utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-ferresdb" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">Product Hunt</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Twitter</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Blog</a></li>
               </ul>
+              <div className="mt-4">
+                <a
+                  href="https://www.producthunt.com/products/ferresdb?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-ferresdb"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block transition-opacity hover:opacity-90"
+                >
+                  <img
+                    alt="FerresDB - High-performance Vector Search Engine built in Rust | Product Hunt"
+                    width={250}
+                    height={54}
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1075967&theme=dark&t=1770641114547"
+                  />
+                </a>
+              </div>
             </div>
           </div>
           <Separator className="my-8" />

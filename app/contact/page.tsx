@@ -73,6 +73,32 @@ export default function ContactPage() {
               </div>
             </a>
           </Card>
+
+          <Card className="p-6 border-border hover:border-primary/50 transition-colors">
+            <a
+              href="https://www.producthunt.com/products/ferresdb?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-ferresdb"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-4 no-underline text-foreground group"
+            >
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">
+                  Product Hunt
+                </h2>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Check out FerresDB on Product Hunt and support us with an upvote.
+                </p>
+                <span className="inline-block transition-opacity hover:opacity-90">
+                  <img
+                    alt="FerresDB - High-performance Vector Search Engine built in Rust | Product Hunt"
+                    width={250}
+                    height={54}
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1075967&theme=dark&t=1770641114547"
+                  />
+                </span>
+              </div>
+            </a>
+          </Card>
         </div>
       </main>
 
