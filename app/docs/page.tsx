@@ -421,6 +421,9 @@ volumes:
                     <tr><td className="p-3"><code className="text-primary text-xs">CORS_ORIGINS</code></td><td className="p-3 text-muted-foreground text-xs">localhost:*</td><td className="p-3 text-muted-foreground text-xs">Comma-separated allowed CORS origins</td></tr>
                     <tr><td className="p-3"><code className="text-primary text-xs">OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td className="p-3 text-muted-foreground text-xs">localhost:4317</td><td className="p-3 text-muted-foreground text-xs">OpenTelemetry OTLP endpoint (when otel feature enabled)</td></tr>
                     <tr><td className="p-3"><code className="text-primary text-xs">GRPC_PORT</code></td><td className="p-3 text-muted-foreground text-xs">50051</td><td className="p-3 text-muted-foreground text-xs">gRPC server port (when grpc feature enabled)</td></tr>
+                    <tr><td className="p-3"><code className="text-primary text-xs">FERRESDB_ENABLE_MCP</code></td><td className="p-3 text-muted-foreground text-xs">-</td><td className="p-3 text-muted-foreground text-xs">Enable MCP server (stdio): set to <code className="text-primary">true</code> or <code className="text-primary">1</code> (when mcp feature enabled)</td></tr>
+                    <tr><td className="p-3"><code className="text-primary text-xs">FERRESDB_WAL_COMPRESSION</code></td><td className="p-3 text-muted-foreground text-xs">false</td><td className="p-3 text-muted-foreground text-xs">Compress WAL with Zstd (<code className="text-primary">true</code> or <code className="text-primary">1</code>)</td></tr>
+                    <tr><td className="p-3"><code className="text-primary text-xs">FERRESDB_BINARY_SNAPSHOT</code></td><td className="p-3 text-muted-foreground text-xs">false</td><td className="p-3 text-muted-foreground text-xs">Use binary snapshots (points.bin) instead of JSONL (<code className="text-primary">true</code> or <code className="text-primary">1</code>)</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -884,13 +887,14 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               FerresDB can act as an <strong className="text-foreground">MCP server</strong> via STDIO, allowing clients such as Claude Desktop to connect to the binary and use tools for vector search, upsert, and statistics. The protocol uses stdin for input and stdout for output; server logs are redirected to stderr when MCP mode is active.
             </p>
             <p className="text-muted-foreground mb-4 text-sm">
-              <span className="text-foreground font-semibold">Activation:</span> Run with <code className="text-primary">--mcp</code> or set <code className="text-primary">FERRESDB_ENABLE_MCP=true</code> (or <code className="text-primary">1</code>). Build with the <code className="text-primary">mcp</code> feature: <code className="text-primary">cargo build -p ferres-db-server --features mcp</code>. The REST (and gRPC) server continues to run in the same process.
+              <span className="text-foreground font-semibold">Activation:</span> Run with <code className="text-primary">--mcp</code> or set <code className="text-primary">FERRESDB_ENABLE_MCP=true</code> (or <code className="text-primary">1</code>). With Docker: use an image built with the <code className="text-primary">mcp</code> feature and run with <code className="text-primary">--mcp</code> or <code className="text-primary">-e FERRESDB_ENABLE_MCP=true</code> (e.g. <code className="text-primary">docker run -p 8080:8080 -e FERRESDB_ENABLE_MCP=true -v ferres-data:/data ferresdb/ferres-db-core:latest</code>). The REST (and gRPC) server continues to run in the same process.
             </p>
             <p className="text-muted-foreground mb-4 text-sm">
               <span className="text-foreground font-semibold">Tools:</span> <code className="text-primary">search_points</code> (vector search with native pre-filtering), <code className="text-primary">upsert_points</code>, <code className="text-primary">get_stats</code> (global or per collection). See the core repo <code className="text-primary">docs/api.md</code> (Model Context Protocol section) for full argument and response schemas.
             </p>
-            <CodeBlock filename="Claude Desktop (stdio)">{`# In your MCP config, point to the FerresDB binary with --mcp:
-# /path/to/ferres-db-server --mcp`}</CodeBlock>
+            <CodeBlock filename="Claude Desktop (stdio)">{`# In your MCP config, use a wrapper that runs FerresDB with MCP, e.g.:
+# docker run -i --rm -e FERRESDB_ENABLE_MCP=true ferresdb/ferres-db-core:latest
+# Or run the binary with --mcp if you built from source.`}</CodeBlock>
 
             {/* ============================================================ */}
             {/*  6. PYTHON SDK                                               */}
