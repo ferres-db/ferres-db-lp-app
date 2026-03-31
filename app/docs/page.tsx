@@ -41,11 +41,14 @@ const sidebarSections = [
       { id: "api-reindex", label: "Reindex" },
       { id: "api-points", label: "Points" },
       { id: "api-search", label: "Search" },
+      { id: "api-graph", label: "Graph" },
       { id: "api-stats", label: "Stats & Metrics" },
+      { id: "api-cluster", label: "Cluster" },
       { id: "api-keys", label: "API Keys" },
       { id: "api-users", label: "Users" },
       { id: "api-audit", label: "Audit" },
       { id: "api-persistence", label: "Persistence" },
+      { id: "api-pitr", label: "Point-in-Time Recovery" },
       { id: "api-tiered-storage", label: "Tiered Storage" },
       { id: "api-websocket", label: "WebSocket" },
       { id: "api-grpc", label: "gRPC" },
@@ -91,7 +94,7 @@ function Endpoint({
   description,
   auth,
 }: {
-  method: "GET" | "POST" | "PUT" | "DELETE";
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   description: string;
   auth?: boolean;
@@ -100,6 +103,7 @@ function Endpoint({
     GET: "bg-green-500/15 text-green-400 border-green-500/30",
     POST: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     PUT: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+    PATCH: "bg-purple-500/15 text-purple-400 border-purple-500/30",
     DELETE: "bg-red-500/15 text-red-400 border-red-500/30",
   };
   return (
@@ -563,12 +567,15 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
               <Endpoint method="POST" path="/api/v1/collections" description="Create collection" />
               <Endpoint method="GET" path="/api/v1/collections" description="List all collections" />
               <Endpoint method="GET" path="/api/v1/collections/{name}" description="Get collection details" />
+              <Endpoint method="PATCH" path="/api/v1/collections/{name}" description="Update collection (e.g. retention_days)" />
               <Endpoint method="DELETE" path="/api/v1/collections/{name}" description="Delete collection" />
             </Card>
 
             <Tabs defaultValue="create" className="mb-6">
               <TabsList className="bg-muted/50">
                 <TabsTrigger value="create">Create</TabsTrigger>
+                <TabsTrigger value="sq8">SQ8 / QJL</TabsTrigger>
+                <TabsTrigger value="polar">PolarQuant</TabsTrigger>
                 <TabsTrigger value="response">Response</TabsTrigger>
               </TabsList>
               <TabsContent value="create">
@@ -578,6 +585,7 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
   "distance": "Cosine",
   "enable_bm25": false,
   "bm25_text_field": "text",
+  "retention_days": 30,
   "tiered_storage": {
     "enabled": true,
     "hot_threshold_hours": 24,
@@ -587,8 +595,46 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
 }
 
 // distance: "Cosine" | "Euclidean" | "DotProduct"
-// enable_bm25, bm25_text_field: optional
+// retention_days: optional — WAL entries older than N days are compacted
 // tiered_storage: optional — see Tiered Storage section`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="sq8">
+                <CodeBlock filename="POST /api/v1/collections — SQ8 with QJL">{`{
+  "name": "my_sq8_collection",
+  "dimension": 384,
+  "distance": "Cosine",
+  "quantization": {
+    "Scalar": {
+      "dtype": "Int8",
+      "always_ram": false,
+      "quantile": 0.99,
+      "enable_qjl": true,
+      "qjl_m": 64,
+      "qjl_seed": 42
+    }
+  }
+}
+
+// quantization.Scalar: SQ8 — ~4x memory reduction via u8 compression
+// enable_qjl: opt-in QJL residual correction — reduces quantization bias, improves recall@10
+// qjl_m: projection dimensions (32–128, default 64)
+// qjl_seed: deterministic seed for projection matrix R (default 42)`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="polar">
+                <CodeBlock filename="POST /api/v1/collections — PolarQuant">{`{
+  "name": "my_polar_collection",
+  "dimension": 384,
+  "distance": "Cosine",
+  "quantization": {
+    "Polar": {
+      "bits_per_angle": 8
+    }
+  }
+}
+
+// PolarQuant: encodes vectors as (radius, angles) using recursive polar coordinates
+// bits_per_angle: 1–8 (default 8 = 256 levels). No calibration required.
+// Recall ≥ 0.90 at dim 128 (1 000 random vectors)`}</CodeBlock>
               </TabsContent>
               <TabsContent value="response">
                 <CodeBlock filename="Response 200">{`{
@@ -596,7 +642,8 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
   "dimension": 384,
   "distance": "Cosine",
   "points_count": 0,
-  "enable_bm25": false
+  "enable_bm25": false,
+  "retention_days": 30
 }`}</CodeBlock>
               </TabsContent>
             </Tabs>
@@ -646,12 +693,17 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
       "metadata": { "text": "Hello world", "category": "greeting" },
       "namespace": "tenant-a",
       "ttl": 3600,
-      "vectors": { "content_vector": [0.0, -0.1, 0.3, ...] }
+      "vectors": { "content_vector": [0.0, -0.1, 0.3, ...] },
+      "relations": ["doc-2", "doc-3"]
     }
   ]
 }
 
-// Max 1000 points per batch. Optional: namespace (multitenancy), ttl (seconds), vectors (named vectors)`}</CodeBlock>
+// Max 1000 points per batch.
+// namespace: optional, multitenancy isolation
+// ttl: optional, seconds until auto-expiry
+// vectors: optional, named vectors for multi-vector search
+// relations: optional, graph edges to other point IDs`}</CodeBlock>
               </TabsContent>
               <TabsContent value="delete">
                 <CodeBlock filename="DELETE /api/v1/collections/{name}/points">{`{
@@ -690,11 +742,14 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
   "filter": { "category": "tech", "price": { "$gte": 10, "$lte": 100 } },
   "namespace": "tenant-a",
   "vector_field": "content_vector",
+  "rerank": true,
   "budget_ms": 50
 }
 
 // filter: optional metadata filter (native HNSW pre-filtering)
-// namespace: optional, restrict to tenant. vector_field: optional, for multi-vector points (default or named)
+// namespace: optional, restrict to tenant
+// vector_field: optional, for multi-vector points ("default" or named field)
+// rerank: optional — apply Cross-Encoder re-ranking via ONNX (requires rerank feature build)
 // budget_ms: optional, 422 if exceeded. Operators: $eq, $ne, $in, $gt, $lt, $gte, $lte`}</CodeBlock>
               </TabsContent>
               <TabsContent value="hybrid">
@@ -709,7 +764,7 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
 
 // fusion: "weighted" (default) or "rrf"
 // weighted: alpha = weight vector (1.0) vs BM25 (0.0). Default alpha: 0.5
-// rrf: Reciprocal Rank Fusion; rrf_k constant (default: 60). No alpha.
+// rrf: Reciprocal Rank Fusion; rrf_k constant (default: 60). No alpha needed.
 // Requires collection with enable_bm25: true`}</CodeBlock>
               </TabsContent>
               <TabsContent value="response">
@@ -724,7 +779,74 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
       }
     }
   ],
-  "took_ms": 0.42
+  "took_ms": 0.42,
+  "rerank_ms": 12.3
+}
+
+// rerank_ms: present only when rerank=true was applied`}</CodeBlock>
+              </TabsContent>
+            </Tabs>
+
+            {/* ─── Graph ─────────────────────────────────────── */}
+            <SubHeading id="api-graph">Graph</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              Points can have optional <code className="text-primary">relations</code> (graph edges to other point IDs).
+              Use these endpoints to create edges and explore subgraphs via BFS traversal.
+              The HNSW index stays unchanged — graph edges are stored alongside point data.
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <Endpoint method="POST" path="/api/v1/collections/{name}/points/link" description="Create a relation (edge) between two points" />
+              <Endpoint method="GET" path="/api/v1/collections/{name}/graph/subgraph" description="Get subgraph via BFS (center_id/depth or seed/limit)" />
+            </Card>
+
+            <Tabs defaultValue="link" className="mb-6">
+              <TabsList className="bg-muted/50">
+                <TabsTrigger value="link">Link Points</TabsTrigger>
+                <TabsTrigger value="subgraph">Subgraph</TabsTrigger>
+                <TabsTrigger value="response">Response</TabsTrigger>
+              </TabsList>
+              <TabsContent value="link">
+                <CodeBlock filename="POST /api/v1/collections/{name}/points/link">{`{
+  "from": "doc-1",
+  "to": "doc-2"
+}
+
+// Creates a non-directed relation between doc-1 and doc-2.
+// Both points will have each other's IDs in their "relations" array.`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="subgraph">
+                <CodeBlock filename="GET /api/v1/collections/{name}/graph/subgraph">{`// BFS from a center node with depth:
+GET /api/v1/collections/my_collection/graph/subgraph?center_id=doc-1&depth=2
+
+// Seed node (1-hop) with result limit:
+GET /api/v1/collections/my_collection/graph/subgraph?seed=doc-1&limit=50
+
+// Query params:
+// center_id: starting node for BFS expansion
+// depth:     BFS depth (number of hops from center)
+// seed:      alias for center_id used for 1-hop exploration
+// limit:     max nodes returned`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="response">
+                <CodeBlock filename="Response 200">{`{
+  "nodes": [
+    {
+      "id": "doc-1",
+      "metadata": { "category": "tech" },
+      "relations": ["doc-2", "doc-3"]
+    },
+    {
+      "id": "doc-2",
+      "metadata": { "category": "science" },
+      "relations": ["doc-1"]
+    }
+  ],
+  "edges": [
+    { "source": "doc-1", "target": "doc-2" },
+    { "source": "doc-1", "target": "doc-3" }
+  ]
 }`}</CodeBlock>
               </TabsContent>
             </Tabs>
@@ -745,8 +867,32 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
             </Card>
 
             <p className="text-sm text-muted-foreground mb-6">
-              <code className="text-primary">GET /api/v1/stats/analytics</code> returns consolidated data for the dashboard: time-series for the last 10 minutes (ingestion throughput, P95 latency, recent latencies) and <code className="text-primary">cache_hit_rate_pct</code> from the core search cache. Useful for real-time charts. The server uses SIMD kernels (AVX2/SSE4.1) when available for distance computations; <code className="text-primary">GET /api/v1/stats/global</code> returns <code className="text-primary">simd_enabled</code>.
+              <code className="text-primary">GET /api/v1/stats/analytics</code> returns consolidated data for the dashboard: time-series for the last 10 minutes (ingestion throughput, P95 latency, recent latencies) and <code className="text-primary">cache_hit_rate_pct</code> from the core search cache. Useful for real-time charts. The server uses SIMD kernels (AVX2/SSE4.1) when available for distance computations; <code className="text-primary">GET /api/v1/stats/global</code> returns <code className="text-primary">simd_enabled</code>, <code className="text-primary">hnsw_auto_tune_enabled</code>, and <code className="text-primary">index_optimization_label</code> (FerresEngine). Per-collection stats (<code className="text-primary">GET /api/v1/collections/{"{name}"}/stats</code>) include <code className="text-primary">ef_search_current</code> (live auto-tuned value) and <code className="text-primary">hnsw_auto_tune_enabled</code>.
             </p>
+
+            {/* ─── Cluster ───────────────────────────────────── */}
+            <SubHeading id="api-cluster">Cluster</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              FerresDB includes a foundation for Raft-based distributed consensus (build with <code className="text-primary">--features raft</code>).
+              The cluster endpoint returns active nodes, the elected leader, and per-node replication status.
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <Endpoint method="GET" path="/api/v1/cluster" description="Get cluster status (nodes, leader, replication lag)" auth={false} />
+            </Card>
+
+            <CodeBlock filename="GET /api/v1/cluster — Response">{`{
+  "raft_enabled": true,
+  "leader_id": "node-1",
+  "nodes": [
+    { "id": "node-1", "addr": "10.0.0.1:8080", "role": "leader", "replication_lag": 0 },
+    { "id": "node-2", "addr": "10.0.0.2:8080", "role": "follower", "replication_lag": 12 }
+  ]
+}
+
+// raft_enabled: false when running single-node (default)
+// replication_lag: approx. WAL entries behind leader`}</CodeBlock>
 
             {/* ─── API Keys Management ───────────────────────── */}
             <SubHeading id="api-keys">API Keys Management</SubHeading>
@@ -754,14 +900,24 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
             <Card className="border-border bg-card p-4 mb-4">
               <Endpoint method="GET" path="/api/v1/keys" description="List API keys (metadata only)" />
               <Endpoint method="POST" path="/api/v1/keys" description="Create new API key" />
+              <Endpoint method="PUT" path="/api/v1/keys/{id}" description="Update API key (e.g. allowed_namespaces)" />
               <Endpoint method="DELETE" path="/api/v1/keys/{id}" description="Delete API key" />
             </Card>
 
+            <CodeBlock filename="POST /api/v1/keys">{`{
+  "name": "my-service-key",
+  "allowed_namespaces": ["tenant-a", "tenant-b"]
+}
+
+// allowed_namespaces: optional — restricts key to specific namespaces (multitenancy).
+// Omit or set null to allow access to all namespaces.`}</CodeBlock>
+
             <CodeBlock filename="POST /api/v1/keys - Response">{`{
-  "id": "key_abc123",
+  "id": 1,
+  "name": "my-service-key",
   "key": "ferres_sk_full_raw_key_shown_once",
-  "prefix": "ferres_sk_full...",
-  "created_at": "2026-02-07T12:00:00Z"
+  "key_prefix": "ferres_sk_full...",
+  "created_at": 1707307200
 }
 
 // The raw key is returned ONLY on creation.
@@ -831,6 +987,50 @@ api_keys = "sk-my-secret-key"`}</CodeBlock>
             <p className="text-sm text-muted-foreground mb-4">
               <span className="text-foreground font-semibold">Storage options:</span> Optional <code className="text-primary">wal_compression</code> (Zstd for WAL) and <code className="text-primary">binary_snapshot</code> (points.bin instead of points.jsonl) reduce disk usage and load time. Configure via <code className="text-primary">config.toml</code> or env <code className="text-primary">FERRESDB_WAL_COMPRESSION</code>, <code className="text-primary">FERRESDB_BINARY_SNAPSHOT</code>. See core <code className="text-primary">docs/api.md</code> for details.
             </p>
+
+            {/* ─── PITR ──────────────────────────────────────── */}
+            <SubHeading id="api-pitr">Point-in-Time Recovery (PITR)</SubHeading>
+
+            <p className="text-muted-foreground mb-4 text-sm">
+              Each WAL entry is timestamped. Snapshots record <code className="text-primary">last_snapshot_timestamp</code>.
+              Use PITR to restore one or all collections to any past state by loading the latest snapshot
+              and replaying only WAL entries up to the target timestamp. Admin-only.
+            </p>
+
+            <Card className="border-border bg-card p-4 mb-4">
+              <Endpoint method="GET" path="/api/v1/admin/restore/points" description="List restore points (snapshots + WAL timestamps) per collection" />
+              <Endpoint method="POST" path="/api/v1/admin/restore" description="Restore to a timestamp (Admin only)" />
+            </Card>
+
+            <Tabs defaultValue="restore" className="mb-6">
+              <TabsList className="bg-muted/50">
+                <TabsTrigger value="restore">Restore</TabsTrigger>
+                <TabsTrigger value="points">Restore Points</TabsTrigger>
+              </TabsList>
+              <TabsContent value="restore">
+                <CodeBlock filename="POST /api/v1/admin/restore">{`{
+  "timestamp": 1707307200,
+  "collection": "my_collection"
+}
+
+// timestamp: Unix epoch seconds — restore to this point in time
+// collection: optional — omit to restore ALL collections
+// Warning: this operation restarts the collection state.
+// Response: { "ok": true, "restored": ["my_collection"], "errors": [] }`}</CodeBlock>
+              </TabsContent>
+              <TabsContent value="points">
+                <CodeBlock filename="GET /api/v1/admin/restore/points?collection=my_collection">{`{
+  "collections": {
+    "my_collection": {
+      "last_snapshot_timestamp": 1707300000,
+      "wal_timestamps": [1707300100, 1707301200, 1707307200]
+    }
+  }
+}
+
+// Use wal_timestamps to pick a target for POST /api/v1/admin/restore`}</CodeBlock>
+              </TabsContent>
+            </Tabs>
 
             {/* ─── Tiered Storage ────────────────────────────── */}
             <SubHeading id="api-tiered-storage">Tiered Storage</SubHeading>
@@ -1025,9 +1225,13 @@ async with RealtimeClient("http://localhost:8080", api_key="ferres_sk_...") as r
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Python 3.8+ support</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> RealtimeClient: WebSocket upsert + event subscription</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> estimate_search_cost, search_explain</div>
-                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization (SQ8) &amp; tiered storage (Hot/Warm/Cold)</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization: SQ8, QJL residual correction, PolarQuant</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Tiered storage (Hot/Warm/Cold) + retention_days</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> API keys: list_keys, create_key, delete_key</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Reindex: start_reindex, get_reindex_job, list_reindex_jobs</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Graph: link_points, get_subgraph (BFS traversal)</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Cross-Encoder rerank param in search</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> PITR: get_restore_points, restore_to_timestamp</div>
               </div>
             </Card>
 
@@ -1152,9 +1356,13 @@ await rt.close();`}</CodeBlock>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> RealtimeClient: WebSocket upsert + event subscription</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> ESM and CJS exports</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> estimateSearchCost, searchExplain</div>
-                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization (SQ8) &amp; tiered storage config</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Quantization: SQ8, QJL residual correction, PolarQuant</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Tiered storage config + retention_days support</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> API keys: listKeys, createKey, deleteKey</div>
                 <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Reindex: startReindex, getReindexJob, listReindexJobs</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Graph: linkPoints, getSubgraph (BFS traversal)</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> Cross-Encoder rerank param in search</div>
+                <div className="flex items-center gap-2"><ChevronRight className="h-3 w-3 text-primary" /> PITR: getRestorePoints, restoreToTimestamp</div>
               </div>
             </Card>
 
@@ -1207,7 +1415,8 @@ await rt.close();`}</CodeBlock>
   "metadata": { "text": "content for BM25", "category": "example", "price": 42.5 },
   "namespace": "tenant-a",            // optional, multitenancy
   "ttl": 3600,                        // optional, seconds until expiry
-  "vectors": { "content_vector": [...] }  // optional, named vectors (multi-vector)
+  "vectors": { "content_vector": [...] },  // optional, named vectors (multi-vector)
+  "relations": ["other-id-1", "other-id-2"] // optional, graph edges to related points
 }`}</CodeBlock>
 
             {/* Distance Metrics */}
@@ -1290,7 +1499,7 @@ await rt.close();`}</CodeBlock>
             <Separator className="my-8" />
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground pb-8">
-              <p>&copy; 2024 FerresDB. Built with Rust.</p>
+              <p>&copy; 2026 FerresDB. Built with Rust.</p>
               <div className="flex gap-4">
                 <a href="/" className="hover:text-primary">Home</a>
                 <a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer" className="hover:text-primary">GitHub</a>
