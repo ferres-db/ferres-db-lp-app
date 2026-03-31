@@ -27,6 +27,12 @@ import {
   Server,
   Activity,
   ChevronRight,
+  Network,
+  Package,
+  Sliders,
+  Clock,
+  Cloud,
+  Share2,
 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
@@ -266,9 +272,10 @@ export default function Page() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="mx-auto mb-10 max-w-3xl text-pretty text-lg text-muted-foreground md:text-xl"
           >
-            FerresDB delivers sub-millisecond vector search with hybrid BM25 retrieval, 
-            gRPC streaming, tiered storage, and enterprise-grade RBAC — all powered by Rust
-            for uncompromising performance in RAG, semantic search, and recommendation systems.
+            FerresDB delivers sub-millisecond vector search with hybrid BM25 retrieval,
+            native Cross-Encoder re-ranking, graph exploration, advanced quantization (SQ8 + QJL + PolarQuant),
+            gRPC streaming, tiered storage, Point-in-Time Recovery, and enterprise-grade RBAC —
+            all powered by Rust for uncompromising performance in RAG, semantic search, knowledge graphs, and recommendation systems.
           </motion.p>
 
           <motion.div
@@ -333,7 +340,7 @@ export default function Page() {
             </div>
           </AnimatedSection>
 
-          <StaggeredCards className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
+          <StaggeredCards className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <StaggeredCard>
               <Card className="border-border bg-card p-6 h-full group hover:border-primary/30 transition-colors">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
@@ -341,7 +348,7 @@ export default function Page() {
                 </div>
                 <h3 className="mb-2 text-xl font-bold">Semantic Search</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Transform user queries into meaning-based results with Cosine, Euclidean, or Dot Product 
+                  Transform user queries into meaning-based results with Cosine, Euclidean, or Dot Product
                   similarity. Combine with metadata filters for precision retrieval.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -359,12 +366,12 @@ export default function Page() {
                 </div>
                 <h3 className="mb-2 text-xl font-bold">RAG Pipelines</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Hybrid vector + BM25 search in a single query with weighted or RRF fusion.
-                  Ground your LLM responses with the most relevant context from your knowledge base.
+                  Hybrid vector + BM25 search with weighted or RRF fusion, plus native Cross-Encoder
+                  re-ranking via ONNX. Ground your LLM responses with the most relevant context.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="text-xs">Hybrid Search</Badge>
-                  <Badge variant="outline" className="text-xs">BM25 Fusion</Badge>
+                  <Badge variant="outline" className="text-xs">Cross-Encoder</Badge>
                   <Badge variant="outline" className="text-xs">RRF & Weighted</Badge>
                 </div>
               </Card>
@@ -377,13 +384,31 @@ export default function Page() {
                 </div>
                 <h3 className="mb-2 text-xl font-bold">Recommendations</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Real-time similarity matching with WebSocket streaming. Dot Product distance 
+                  Real-time similarity matching with WebSocket streaming. Dot Product distance
                   optimized for recommendation models. Auto-batching up to 1000 points/request.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="text-xs">WebSocket</Badge>
                   <Badge variant="outline" className="text-xs">Dot Product</Badge>
                   <Badge variant="outline" className="text-xs">Auto-batch</Badge>
+                </div>
+              </Card>
+            </StaggeredCard>
+
+            <StaggeredCard>
+              <Card className="border-border bg-card p-6 h-full group hover:border-primary/30 transition-colors">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                  <Network className="h-6 w-6 text-orange-400" />
+                </div>
+                <h3 className="mb-2 text-xl font-bold">Knowledge Graphs</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Store graph edges alongside vectors. Traverse connected points via BFS, query
+                  subgraphs, and combine vector similarity with graph proximity for richer results.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="text-xs">Graph Traversal</Badge>
+                  <Badge variant="outline" className="text-xs">BFS Subgraph</Badge>
+                  <Badge variant="outline" className="text-xs">Relations API</Badge>
                 </div>
               </Card>
             </StaggeredCard>
@@ -473,6 +498,27 @@ export default function Page() {
                 description:
                   "Fully-typed TypeScript SDK with Zod validation and WebSocket support. Async Python SDK with httpx. Both feature auto-retry, auto-batching, and structured logging.",
                 color: "bg-indigo-500/10 text-indigo-400",
+              },
+              {
+                icon: Network,
+                title: "Graph Exploration",
+                description:
+                  "Native point-level graph: store relations between documents, traverse subgraphs via BFS, and combine graph proximity with vector similarity. Ideal for knowledge graphs and connected recommendations.",
+                color: "bg-orange-500/10 text-orange-400",
+              },
+              {
+                icon: Package,
+                title: "Advanced Quantization",
+                description:
+                  "SQ8 scalar quantization (4× memory reduction), QJL residual correction to reduce quantization bias and improve recall@10, and PolarQuant — a calibration-free polar-coordinate encoding.",
+                color: "bg-teal-500/10 text-teal-400",
+              },
+              {
+                icon: Sliders,
+                title: "HNSW Auto-Tuning (FerresEngine)",
+                description:
+                  "Dynamically adjusts ef_search every 60 seconds based on real-time P95 latency and CPU load. Increases recall when latency budget permits; backs off under pressure. Zero config required.",
+                color: "bg-pink-500/10 text-pink-400",
               },
             ].map((feature) => (
               <StaggeredCard key={feature.title}>
@@ -656,7 +702,7 @@ export default function Page() {
           </AnimatedSection>
 
           <div className="mx-auto max-w-6xl">
-            <StaggeredCards className="grid gap-6 md:grid-cols-2">
+            <StaggeredCards className="grid gap-6 md:grid-cols-3">
               {/* Indexing Performance */}
               <StaggeredCard>
                 <Card className="border-border bg-card p-6 h-full">
@@ -721,6 +767,37 @@ export default function Page() {
                   </div>
                 </Card>
               </StaggeredCard>
+
+              {/* SQ8 Memory Savings */}
+              <StaggeredCard>
+                <Card className="border-border bg-card p-6 h-full">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/10">
+                      <Package className="h-5 w-5 text-teal-400" />
+                    </div>
+                    <h3 className="text-xl font-bold">Memory Savings (SQ8)</h3>
+                  </div>
+                  <div className="space-y-5">
+                    {[
+                      { label: "f32 baseline", value: "100%", bar: "100%", color: "bg-muted-foreground/50" },
+                      { label: "SQ8 compressed", value: "25%", bar: "25%", color: "bg-teal-500" },
+                      { label: "SQ8 + QJL recall@10", value: "≥ 90%", bar: "90%", color: "bg-teal-400" },
+                      { label: "PolarQuant (no calib.)", value: "25–30%", bar: "28%", color: "bg-cyan-500" },
+                    ].map((row, i) => (
+                      <div key={row.label}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">{row.label}</span>
+                          <span className="text-lg font-bold text-primary">{row.value}</span>
+                        </div>
+                        <AnimatedBar width={row.bar} color={row.color} delay={i * 0.15} />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    4× memory reduction with SQ8. QJL residual correction maintains recall without extra RAM.
+                  </p>
+                </Card>
+              </StaggeredCard>
             </StaggeredCards>
 
             {/* Why It's Fast */}
@@ -742,8 +819,16 @@ export default function Page() {
                       desc: "Thread-safe design with parallelized batch operations. Ready for multi-threaded servers and concurrent requests.",
                     },
                     {
-                      title: "LRU Search Cache",
-                      desc: "Optional caching for repeated queries. Configurable cache size eliminates redundant computation on hot queries.",
+                      title: "LRU Search Cache + Warmup",
+                      desc: "Optional caching for repeated queries. On startup, the server replays recent queries from query log to warm the index and cache automatically.",
+                    },
+                    {
+                      title: "SIMD (AVX2 / SSE4.1)",
+                      desc: "Distance kernels use AVX2 (8× f32) and SSE4.1 (4× f32) with runtime dispatch. Asymmetric SQ8 distance (f32×u8) also SIMD-accelerated.",
+                    },
+                    {
+                      title: "FerresEngine Auto-Tuning",
+                      desc: "ef_search is adjusted every 60 s using P95 latency as a proxy. Automatically increases recall when bandwidth is available, backs off under load.",
                     },
                   ].map((item) => (
                     <StaggeredCard key={item.title}>
@@ -836,6 +921,21 @@ export default function Page() {
                           aspect: "Observability",
                           ferres: "Prometheus + query profiling + dashboard",
                           others: "Depends on the product",
+                        },
+                        {
+                          aspect: "Quantization",
+                          ferres: "SQ8 (4× mem) + QJL residual + PolarQuant — all opt-in",
+                          others: "Rarely built-in; often external preprocessing",
+                        },
+                        {
+                          aspect: "Graph Support",
+                          ferres: "Native point graph with BFS traversal + subgraph API",
+                          others: "Not a standard feature",
+                        },
+                        {
+                          aspect: "Disaster Recovery",
+                          ferres: "WAL + Snapshots + PITR (restore to any past timestamp)",
+                          others: "Basic snapshots at best",
                         },
                       ].map((row) => (
                         <tr key={row.aspect} className="hover:bg-muted/30 transition-colors">
@@ -1112,6 +1212,26 @@ export default function Page() {
                 title: "Budget-Aware Search",
                 desc: "Set budget_ms on any search query. Automatically fails with 422 if the latency budget is exceeded — perfect for SLA enforcement.",
               },
+              {
+                icon: Clock,
+                title: "Point-in-Time Recovery",
+                desc: "Every WAL entry is timestamped. Restore any collection (or all) to an exact past moment via POST /admin/restore. Browse available timestamps before committing.",
+              },
+              {
+                icon: Cloud,
+                title: "S3 Cloud Backup",
+                desc: "One-click snapshot export to AWS S3 (or any S3-compatible endpoint). Configure region, bucket, and credentials via config.toml or environment variables.",
+              },
+              {
+                icon: Share2,
+                title: "Distributed Consensus (Raft)",
+                desc: "Foundation for multi-node deployments: optional openraft integration replicates WAL to a majority of nodes before confirming writes. Build with --features raft.",
+              },
+              {
+                icon: Shield,
+                title: "Namespace Physical Isolation",
+                desc: "With namespace_physical_isolation, each tenant's data lives in a separate directory. Enables per-namespace snapshots and clean tenant offboarding without affecting others.",
+              },
             ].map((item) => (
               <StaggeredCard key={item.title}>
                 <Card className="border-border bg-card p-6 h-full group hover:border-primary/20 transition-all duration-300">
@@ -1228,6 +1348,8 @@ export default function Page() {
                 <li><a href="/docs#api-grpc" className="text-muted-foreground hover:text-primary transition-colors">gRPC API</a></li>
                 <li><a href="/docs#api-websocket" className="text-muted-foreground hover:text-primary transition-colors">WebSocket</a></li>
                 <li><a href="/docs#api-mcp" className="text-muted-foreground hover:text-primary transition-colors">MCP</a></li>
+                <li><a href="/docs#api-graph" className="text-muted-foreground hover:text-primary transition-colors">Graph API</a></li>
+                <li><a href="/docs#api-pitr" className="text-muted-foreground hover:text-primary transition-colors">Point-in-Time Recovery</a></li>
               </ul>
             </div>
             <div>
