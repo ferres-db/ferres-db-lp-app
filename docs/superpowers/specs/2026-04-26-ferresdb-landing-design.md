@@ -74,7 +74,7 @@ Loaded via `next/font/google`, injected as CSS variables:
 - `--font-mono`: JetBrains Mono (weights 400, 700)
 - `--font-body`: IBM Plex Sans (weights 400, 500)
 
-Applied in `tailwind.config.ts` as `fontFamily.heading`, `fontFamily.mono`, `fontFamily.sans`. Geist fonts removed from `layout.tsx`.
+Applied in `tailwind.config.ts` as `fontFamily.heading`, `fontFamily.mono`, `fontFamily.sans`. Geist fonts removed from `layout.tsx`. The hardcoded `body { font-family: Arial, Helvetica, sans-serif; }` in `globals.css` line 6 is removed — Tailwind's `font-sans` (IBM Plex Sans) takes over. This improves font rendering on docs/contact/privacy/terms pages as a side effect. Syne (`font-heading`) is only applied explicitly in landing section components, not inherited by other pages.
 
 ---
 
