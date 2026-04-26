@@ -1,10 +1,11 @@
 import { Navbar } from "@/components/sections/Navbar";
+import { HeroSection } from "@/components/sections/HeroSection";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-hidden" style={{ background: "#1A1A1A", color: "#f9fafb" }}>
       <Navbar />
-      <div className="pt-20 px-8 text-white">Navbar test</div>
+      <HeroSection />
     </div>
   );
 }
