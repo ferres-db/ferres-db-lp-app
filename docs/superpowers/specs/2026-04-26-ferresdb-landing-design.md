@@ -92,7 +92,7 @@ Applied in `tailwind.config.ts` as `fontFamily.heading`, `fontFamily.mono`, `fon
 - Background: dot-grid (CSS radial-gradient repeat, slow `drift` keyframe) + orange blob glow top-right
 - Badge: `🔓 Open Source — MIT OR Apache-2.0` with GitHub icon, micro-glow, links to repo
 - Headline (Syne 800, large): "Vector search. / Built in Rust. / Sub-millisecond."
-- Subtitle (IBM Plex Sans): full description from spec
+- Subtitle (IBM Plex Sans): "FerresDB is a high-performance vector search engine for semantic search, RAG pipelines, and recommendation systems. REST API, hybrid search, WAL persistence — production-ready from day one."
 - CTAs: filled orange `Get Started` (anchor `#quickstart`) + outline `View on GitHub →`
 - Metric counters (3): `~500μs P50 Latency` · `100K+ vectors/s Ingest Throughput` · `3 SDKs Rust · Python · TypeScript`
   - Numbers in JetBrains Mono orange, animated via `AnimatedCounter`
@@ -157,10 +157,11 @@ Applied in `tailwind.config.ts` as `fontFamily.heading`, `fontFamily.mono`, `fon
 ## Shared Components
 
 ### `CodeBlock`
-Props: `filename: string`, `language: string`, `children: string`  
-Structure: dark bg div → top bar (filename + language badge + copy icon button) → `<pre><code>` block.  
-Copy: `navigator.clipboard.writeText(children)` with a brief "Copied!" feedback state.  
-No runtime syntax highlighting library — token coloring done with `<span>` wrapping in the JSX for the small fixed snippets.
+Props: `filename: string`, `language: string`, `raw: string`, `children: React.ReactNode`  
+`raw` is the plain-text string used for clipboard copy. `children` is the pre-rendered JSX with `<span>` token coloring.  
+Structure: dark bg div → top bar (filename + language badge + copy icon button) → `<pre><code>{children}</code></pre>`.  
+Copy: `navigator.clipboard.writeText(raw)` with brief "Copied!" feedback state.  
+No runtime syntax highlighting library — token coloring via `<span>` wraps authored directly in each section component.
 
 ### `AnimatedCounter`
 Props: `value: number`, `suffix?: string`, `prefix?: string`, `duration?: number`  
