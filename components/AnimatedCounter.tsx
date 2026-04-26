@@ -16,6 +16,8 @@ export function AnimatedCounter({ value, suffix = "", prefix = "", duration = 1.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let rafId: number;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !triggered.current) {
@@ -29,16 +31,20 @@ export function AnimatedCounter({ value, suffix = "", prefix = "", duration = 1.
               setCount(value);
             } else {
               setCount(Math.floor(current));
-              requestAnimationFrame(tick);
+              rafId = requestAnimationFrame(tick);
             }
           };
-          requestAnimationFrame(tick);
+          rafId = requestAnimationFrame(tick);
         }
       },
       { threshold: 0.5 }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafId);
+      triggered.current = false;
+    };
   }, [value, duration]);
 
   return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
