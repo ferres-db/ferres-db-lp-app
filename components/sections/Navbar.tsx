@@ -1,12 +1,14 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export function Navbar() {
+  const prefersReduced = useReducedMotion();
+
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+      transition={{ duration: prefersReduced ? 0 : 0.6, ease: [0.25, 0.4, 0.25, 1] }}
       className="fixed top-0 z-50 w-full"
       style={{
         background: "rgba(26,26,26,0.85)",
@@ -32,7 +34,7 @@ export function Navbar() {
           </span>
         </div>
 
-        {/* Nav links (hidden on mobile) */}
+        {/* Nav links (hidden on mobile — hamburger menu out of scope) */}
         <div className="hidden items-center gap-6 md:flex">
           {[
             { label: "Docs", href: "/docs" },
@@ -58,21 +60,9 @@ export function Navbar() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Star FerresDB on GitHub"
-          className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
-          style={{
-            border: "1px solid #f97316",
-            color: "#f97316",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.background = "#f97316";
-            (e.currentTarget as HTMLAnchorElement).style.color = "#000";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-            (e.currentTarget as HTMLAnchorElement).style.color = "#f97316";
-          }}
+          className="flex items-center gap-2 rounded-md border border-[#f97316] px-4 py-2 text-sm font-medium text-[#f97316] transition-colors hover:bg-[#f97316] hover:text-black"
         >
-          ⭐ Star on GitHub
+          <span aria-hidden="true">⭐</span> Star on GitHub
         </a>
       </div>
     </motion.nav>
