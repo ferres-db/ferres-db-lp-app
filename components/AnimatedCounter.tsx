@@ -22,6 +22,11 @@ export function AnimatedCounter({ value, suffix = "", prefix = "", duration = 1.
       ([entry]) => {
         if (entry.isIntersecting && !triggered.current) {
           triggered.current = true;
+          const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (prefersReduced) {
+            setCount(value);
+            return;
+          }
           let current = 0;
           const totalFrames = duration * 60;
           const increment = value / totalFrames;

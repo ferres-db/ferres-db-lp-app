@@ -28,6 +28,7 @@ export function HeroSection() {
               href="https://github.com/ferres-db/ferres-db"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="View FerresDB on GitHub (MIT OR Apache-2.0)"
               className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-2 font-mono text-sm text-[#9CA3AF] transition-all hover:border-[#f97316]/50"
               style={{
                 background: "rgba(255,255,255,0.04)",
