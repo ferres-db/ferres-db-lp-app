@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/sections/Footer";
 import {
   ChevronRight,
   Menu,
@@ -131,8 +130,11 @@ function Endpoint({
 /* ------------------------------------------------------------------ */
 function SectionHeading({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <h2 id={id} className="text-2xl font-bold mt-16 mb-6 scroll-mt-24 flex items-center gap-3">
-      <div className="h-1 w-1 rounded-full bg-primary" />
+    <h2
+      id={id}
+      className="font-heading text-2xl md:text-3xl font-extrabold text-white mt-16 mb-6 scroll-mt-24 flex items-center gap-3"
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-[#f97316]" />
       {children}
     </h2>
   );
@@ -140,7 +142,7 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
 
 function SubHeading({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <h3 id={id} className="text-xl font-bold mt-10 mb-4 scroll-mt-24">
+    <h3 id={id} className="font-heading text-xl font-bold text-white mt-10 mb-4 scroll-mt-24">
       {children}
     </h3>
   );
@@ -153,37 +155,67 @@ export default function DocsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div
+      className="min-h-screen overflow-x-hidden"
+      style={{ background: "#1A1A1A", color: "#f9fafb" }}
+    >
       {/* ── Top navigation ─────────────────────────────────────── */}
-      <nav className="fixed top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
+      <nav
+        className="fixed top-0 z-50 w-full"
+        style={{
+          background: "rgba(26,26,26,0.85)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(249,115,22,0.15)",
+        }}
+      >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
-              className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              className="-ml-2 p-2 text-[#9CA3AF] transition-colors hover:text-[#f97316] lg:hidden"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            <a href="/" className="flex items-center gap-2">
+            <a href="/" aria-label="FerresDB home" className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.png" alt="FerresDB" className="h-8 w-auto object-contain" />
             </a>
-            <Badge className="bg-primary/10 text-primary hover:bg-primary/20 text-xs">Docs</Badge>
+            <span
+              className="hidden sm:inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] text-[#f97316]"
+              style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)" }}
+            >
+              Docs
+            </span>
           </div>
           <div className="hidden items-center gap-6 md:flex">
-            <a href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1">
-              <ArrowLeft className="h-3 w-3" />
+            <a
+              href="/"
+              className="flex items-center gap-1 text-sm text-[#9CA3AF] transition-colors hover:text-[#f97316]"
+            >
+              <ArrowLeft className="h-3 w-3" aria-hidden="true" />
               Home
             </a>
-            <a href="#api-reference" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <a
+              href="#api-reference"
+              className="text-sm text-[#9CA3AF] transition-colors hover:text-[#f97316]"
+            >
               API Reference
             </a>
-            <a href="#sdk-python" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <a
+              href="#sdk-python"
+              className="text-sm text-[#9CA3AF] transition-colors hover:text-[#f97316]"
+            >
               SDKs
             </a>
           </div>
-          <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <a href="#docker">Get Started</a>
-          </Button>
+          <a
+            href="#docker"
+            className="rounded-md bg-[#f97316] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            Get Started
+          </a>
         </div>
       </nav>
 
@@ -196,31 +228,38 @@ export default function DocsPage() {
       <div className="container mx-auto flex pt-16">
         {/* Sidebar */}
         <aside
-          className={`fixed top-16 z-40 h-[calc(100vh-4rem)] w-72 shrink-0 overflow-y-auto border-r border-border bg-background p-6 transition-transform lg:sticky lg:translate-x-0 ${
+          className={`fixed top-16 z-40 h-[calc(100vh-4rem)] w-72 shrink-0 overflow-y-auto p-6 transition-transform lg:sticky lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
+          style={{
+            background: "#111111",
+            borderRight: "1px solid rgba(249,115,22,0.1)",
+          }}
         >
-          <nav className="space-y-1">
+          <nav aria-label="Documentation sections" className="space-y-1">
             {sidebarSections.map((section) => (
               <div key={section.id}>
                 <a
                   href={`#${section.id}`}
                   onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#9CA3AF] transition-colors hover:bg-[#f97316]/10 hover:text-[#f97316]"
                 >
-                  <section.icon className="h-4 w-4 shrink-0" />
+                  <section.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   {section.label}
                 </a>
                 {section.children && (
-                  <div className="ml-6 mt-1 space-y-0.5 border-l border-border pl-3">
+                  <div
+                    className="ml-6 mt-1 space-y-0.5 pl-3"
+                    style={{ borderLeft: "1px solid rgba(249,115,22,0.15)" }}
+                  >
                     {section.children.map((child) => (
                       <a
                         key={child.id}
                         href={`#${child.id}`}
                         onClick={() => setSidebarOpen(false)}
-                        className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-[#9CA3AF] transition-colors hover:text-[#f97316]"
                       >
-                        <ChevronRight className="h-3 w-3 shrink-0" />
+                        <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
                         {child.label}
                       </a>
                     ))}
@@ -236,8 +275,16 @@ export default function DocsPage() {
           <div className="mx-auto max-w-4xl">
             {/* ── Hero ──────────────────────────────────────── */}
             <div className="mb-12">
-              <h1 className="text-4xl font-bold mb-4">FerresDB Documentation</h1>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="mb-3 font-mono text-xs uppercase tracking-widest text-[#f97316]">
+                Documentation
+              </p>
+              <h1
+                className="mb-4 font-heading font-extrabold text-white"
+                style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", lineHeight: 1.1 }}
+              >
+                FerresDB Documentation
+              </h1>
+              <p className="text-lg leading-relaxed text-[#9CA3AF]">
                 Complete reference for the FerresDB high-performance vector search engine.
                 Learn how to install, configure, and integrate FerresDB into your applications.
               </p>
@@ -1495,19 +1542,11 @@ await rt.close();`}</CodeBlock>
               every 1000 write operations to keep WAL size bounded.
             </div>
 
-            {/* ── Footer ─────────────────────────────────────── */}
-            <Separator className="my-8" />
-
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground pb-8">
-              <p>&copy; 2026 FerresDB. Built with Rust.</p>
-              <div className="flex gap-4">
-                <a href="/" className="hover:text-primary">Home</a>
-                <a href="https://github.com/ferres-db" target="_blank" rel="noopener noreferrer" className="hover:text-primary">GitHub</a>
-              </div>
-            </div>
           </div>
         </main>
       </div>
+
+      <Footer />
     </div>
   );
 }

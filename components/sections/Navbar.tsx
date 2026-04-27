@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
 export function Navbar() {
@@ -20,11 +21,15 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo + license badge */}
         <div className="flex items-center gap-3">
-          <a href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold">
-              <span className="text-[#f97316]">●</span>
-              <span className="ml-1 text-white">FerresDB</span>
-            </span>
+          <a href="/" aria-label="FerresDB home" className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="FerresDB"
+              width={140}
+              height={32}
+              priority
+              className="h-8 w-auto object-contain"
+            />
           </a>
           <span
             className="hidden sm:inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] text-[#9CA3AF]"

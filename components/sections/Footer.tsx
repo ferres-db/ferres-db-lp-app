@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function Footer() {
   return (
     <footer
@@ -10,14 +12,18 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
           {/* Left: branding */}
-          <div className="text-center sm:text-left">
-            <p className="font-mono text-base font-bold text-white">
-              <span className="text-[#f97316]">●</span> FerresDB
-            </p>
-            <p className="mt-1 font-mono text-xs text-[#9CA3AF]">
+          <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
+            <Image
+              src="/logo.png"
+              alt="FerresDB"
+              width={140}
+              height={32}
+              className="h-8 w-auto object-contain"
+            />
+            <p className="font-mono text-xs text-[#9CA3AF]">
               High-performance vector search in Rust
             </p>
-            <p className="mt-0.5 font-mono text-xs text-[#9CA3AF]/60">
+            <p className="font-mono text-xs text-[#9CA3AF]/60">
               MIT OR Apache-2.0
             </p>
           </div>
