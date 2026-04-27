@@ -48,6 +48,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal { transition: none; }
+  .dot-grid { animation: none; }
+  .text-shimmer { animation: none; }
+  .pulse-dot { animation: none; }
 }
 
 /* ── Hero dot-grid ───────────────────────────────────────── */

@@ -35,7 +35,7 @@ export function QuickStartSection() {
   return (
     <section
       id="quickstart"
-      className="py-20"
+      className="scroll-mt-20 py-20"
       style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
     >
       <div className="container mx-auto px-4">

@@ -20,7 +20,7 @@ export function PerformanceSection() {
   return (
     <section
       id="performance"
-      className="py-20"
+      className="scroll-mt-20 py-20"
       style={{ background: "#111111", borderTop: "1px solid rgba(249,115,22,0.08)" }}
     >
       <div className="container mx-auto px-4">

@@ -66,7 +66,7 @@ export function SDKsSection() {
   return (
     <section
       id="sdks"
-      className="py-20"
+      className="scroll-mt-20 py-20"
       style={{ background: "#111111", borderTop: "1px solid rgba(249,115,22,0.08)" }}
     >
       <div className="container mx-auto px-4">
@@ -80,12 +80,15 @@ export function SDKsSection() {
 
         <div ref={contentRef} className="reveal mx-auto max-w-3xl">
           {/* Tab bar */}
-          <div className="mb-6 flex gap-2">
+          <div role="tablist" aria-label="SDK language" className="mb-6 flex gap-2">
             {(["typescript", "python", "rust"] as Tab[]).map((tab) => (
               <button
                 key={tab}
+                id={`tab-${tab}`}
+                role="tab"
+                aria-selected={active === tab}
+                aria-controls={`panel-${tab}`}
                 onClick={() => setActive(tab)}
-                aria-pressed={active === tab}
                 className={`sdk-tab${active === tab ? " active" : ""}`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -95,7 +98,7 @@ export function SDKsSection() {
 
           {/* TypeScript */}
           {active === "typescript" && (
-            <div className="space-y-4">
+            <div id="panel-typescript" role="tabpanel" aria-labelledby="tab-typescript" className="space-y-4">
               <CodeBlock filename="terminal" language="bash" raw={TS_INSTALL_RAW}>
                 <span className="text-[#9CA3AF]">pnpm add </span>
                 <span className="text-[#34d399]">@ferres-db/typescript-sdk</span>
@@ -143,7 +146,7 @@ export function SDKsSection() {
 
           {/* Python */}
           {active === "python" && (
-            <div className="space-y-4">
+            <div id="panel-python" role="tabpanel" aria-labelledby="tab-python" className="space-y-4">
               <CodeBlock filename="terminal" language="bash" raw={PY_INSTALL_RAW}>
                 <span className="text-[#9CA3AF]">pip install </span>
                 <span className="text-[#34d399]">ferres-db-python</span>
@@ -200,7 +203,7 @@ export function SDKsSection() {
 
           {/* Rust */}
           {active === "rust" && (
-            <div className="space-y-4">
+            <div id="panel-rust" role="tabpanel" aria-labelledby="tab-rust" className="space-y-4">
               <CodeBlock filename="Cargo.toml" language="toml" raw={RUST_INSTALL_RAW}>
                 <span className="text-[#6B7280]">[dependencies]</span>{"\n"}
                 <span className="text-[#34d399]">ferres-db-sdk</span>
