@@ -28,7 +28,7 @@ export function UseCasesSection() {
       <div className="container mx-auto px-4">
         <div ref={titleRef} className="reveal mx-auto mb-14 max-w-2xl text-center">
           <p className="mb-3 font-mono text-xs uppercase tracking-widest text-[#f97316]">Use Cases</p>
-          <h2 className="font-heading text-3xl font-extrabold text-white md:text-4xl">
+          <h2 className="font-heading text-2xl font-extrabold text-white md:text-3xl">
             Built for AI-native applications
           </h2>
         </div>

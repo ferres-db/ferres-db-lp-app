@@ -25,7 +25,7 @@ export function MCPSection() {
           <p className="mb-3 font-mono text-xs uppercase tracking-widest text-[#f97316]">
             Claude Desktop Integration
           </p>
-          <h2 className="mb-4 font-heading text-3xl font-extrabold text-white md:text-4xl">
+          <h2 className="mb-4 font-heading text-2xl font-extrabold text-white md:text-3xl">
             Connect Claude Desktop to FerresDB
           </h2>
           <p className="mb-8 text-[#9CA3AF] leading-relaxed">

@@ -13,7 +13,7 @@ export function OpenSourceCTA() {
         <div ref={ref} className="reveal mx-auto max-w-2xl text-center">
           <h2
             className="mb-4 font-heading font-extrabold text-white"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", lineHeight: 1.1 }}
+            style={{ fontSize: "clamp(1.625rem, 3.5vw, 2.5rem)", lineHeight: 1.15 }}
           >
             Built in the open.<br />
             <span className="text-[#f97316]">For everyone.</span>

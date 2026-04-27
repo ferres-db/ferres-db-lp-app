@@ -50,7 +50,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: prefersReduced ? 0 : 0.7, delay: prefersReduced ? 0 : 0.25, ease: [0.25, 0.4, 0.25, 1] }}
             className="mb-6 font-heading font-extrabold leading-[1.05] tracking-tight text-white"
-            style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)" }}
+            style={{ fontSize: "clamp(2rem, 4.5vw, 3.75rem)" }}
           >
             Vector search.<br />
             Built in Rust.<br />
