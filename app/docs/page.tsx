@@ -156,7 +156,7 @@ export default function DocsPage() {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="min-h-screen"
       style={{ background: "#1A1A1A", color: "#f9fafb" }}
     >
       {/* ── Top navigation ─────────────────────────────────────── */}
