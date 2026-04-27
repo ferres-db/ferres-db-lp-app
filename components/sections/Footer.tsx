@@ -53,11 +53,11 @@ export function Footer() {
         >
           <p className="text-xs text-[#9CA3AF]/50">
             © 2026 FerresDB. Built with Rust. ·{" "}
-            <a href="/privacy" className="hover:text-[#f97316] transition-colors">Privacy</a>
+            <a href="/privacy" className="text-[#9CA3AF]/50 hover:text-[#f97316] transition-colors">Privacy</a>
             {" · "}
-            <a href="/terms" className="hover:text-[#f97316] transition-colors">Terms</a>
+            <a href="/terms" className="text-[#9CA3AF]/50 hover:text-[#f97316] transition-colors">Terms</a>
             {" · "}
-            <a href="/contact" className="hover:text-[#f97316] transition-colors">Contact</a>
+            <a href="/contact" className="text-[#9CA3AF]/50 hover:text-[#f97316] transition-colors">Contact</a>
           </p>
         </div>
       </div>

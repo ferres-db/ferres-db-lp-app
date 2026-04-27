@@ -85,6 +85,7 @@ export function SDKsSection() {
               <button
                 key={tab}
                 onClick={() => setActive(tab)}
+                aria-pressed={active === tab}
                 className={`sdk-tab${active === tab ? " active" : ""}`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}

@@ -10,6 +10,7 @@ export function MCPSection() {
 
   return (
     <section
+      id="mcp"
       className="py-20"
       style={{
         background: "#111111",
